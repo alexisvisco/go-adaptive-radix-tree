@@ -579,7 +579,7 @@ func TestTreeAPI(t *testing.T) { //nolint:funlen
 	assert.Nil(t, value)
 	assert.False(t, found)
 
-	it := tree.Iterator(TraverseAll)
+	it := tree.Iterator(WithVisitAllOption())
 	assert.NotNil(t, it)
 	assert.False(t, it.HasNext())
 	_, err := it.Next()
@@ -619,7 +619,7 @@ func TestTreeAPI(t *testing.T) { //nolint:funlen
 		return true
 	})
 
-	it = tree.Iterator(TraverseAll)
+	it = tree.Iterator(WithVisitAllOption())
 	assert.NotNil(t, it)
 	assert.True(t, it.HasNext())
 
@@ -686,12 +686,12 @@ func TestTreeInsertAndSearchKeyWithNull(t *testing.T) {
 		traversal = append(traversal, string(node.Key()))
 
 		return true
-	}, TraverseLeaf)
+	}, WithVisitLeafOption())
 	assert.Equal(t, expected, traversal)
 
 	traversal = []string{}
 
-	it := tree.Iterator(TraverseLeaf)
+	it := tree.Iterator(WithVisitLeafOption())
 	for it.HasNext() {
 		leaf, _ := it.Next()
 		traversal = append(traversal, string(leaf.Key()))
@@ -779,7 +779,7 @@ func TestNodesWithNullKeys16(t *testing.T) { //nolint:funlen
 		traversal = append(traversal, string(node.Key()))
 
 		return true
-	}, TraverseLeaf)
+	}, WithVisitLeafOption())
 	assert.Equal(t, expected, traversal)
 }
 
@@ -833,7 +833,7 @@ func TestNodesWithNullKeys48(t *testing.T) { //nolint:funlen
 		traversal = append(traversal, s)
 
 		return true
-	}, TraverseLeaf)
+	}, WithVisitLeafOption())
 	sort.Strings(termsCopy) // traversal should be in sorted order
 	assert.Equal(t, termsCopy, traversal)
 
@@ -898,7 +898,7 @@ func TestNodesWithNullKeys256(t *testing.T) { //nolint:funlen
 		traversal = append(traversal, s)
 
 		return true
-	}, TraverseLeaf)
+	}, WithVisitLeafOption())
 	sort.Strings(termsCopy)
 	assert.Equal(t, termsCopy, traversal)
 

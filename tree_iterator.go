@@ -73,19 +73,19 @@ type iterator struct {
 var _ Iterator = (*iterator)(nil)
 
 // newTreeIterator creates a new tree iterator.
-func newTreeIterator(tr *tree, opts traverseOpts) Iterator {
+func newTreeIterator(tr *tree, opts *TraverseOptions) Iterator {
 	state := &state{}
-	state.push(newIteratorContext(tr.root, opts.hasReverse()))
+	state.push(newIteratorContext(tr.root, opts.Reverse))
 
 	it := &iterator{
 		version:  tr.version,
 		tree:     tr,
 		nextNode: tr.root,
 		state:    state,
-		reverse:  opts.hasReverse(),
+		reverse:  opts.Reverse,
 	}
 
-	if opts&TraverseAll == TraverseAll {
+	if opts.VisitLeaf && opts.VisitNode {
 		return it
 	}
 
@@ -153,7 +153,7 @@ func (it *iterator) next() {
 // BufferedIterator implements HasNext and Next methods for buffered iteration.
 // It allows to iterate over leaf or non-leaf nodes only.
 type bufferedIterator struct {
-	opts     traverseOpts
+	opts     *TraverseOptions
 	it       Iterator
 	nextNode Node
 	nextErr  error
@@ -187,12 +187,12 @@ func (bit *bufferedIterator) Next() (Node, error) {
 
 // hasLeafIterator checks if the iterator is for leaf nodes.
 func (bit *bufferedIterator) hasLeafIterator() bool {
-	return bit.opts&TraverseLeaf == TraverseLeaf
+	return bit.opts.VisitLeaf
 }
 
 // hasNodeIterator checks if the iterator is for non-leaf nodes.
 func (bit *bufferedIterator) hasNodeIterator() bool {
-	return bit.opts&TraverseNode == TraverseNode
+	return bit.opts.VisitNode
 }
 
 // peek looks for the next node or leaf node to iterate.
