@@ -23,8 +23,8 @@
 //	        fmt.Printf("Search value=%v\n", value)
 //	    }
 //
-//	    tree.ForEach(func(node art.Node) bool {
-//	        fmt.Printf("Callback value=%v\n", node.Value())
+//	    tree.ForEach(func(Node art.NodeKV) bool {
+//	        fmt.Printf("Callback value=%v\n", Node.Value())
 //	        return true
 //	    })
 //

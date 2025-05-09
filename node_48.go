@@ -1,12 +1,12 @@
 package art
 
-// Node with 48 children.
+// NodeKV with 48 children.
 const (
 	n48bitShift = 6  // 2^n48bitShift == n48maskLen
-	n48maskLen  = 64 // it should be sizeof(node48.present[0])
+	n48maskLen  = 64 // it should be sizeof(Node48.present[0])
 )
 
-// present48 is a bitfield to store the presence of keys in the node48.
+// present48 is a bitfield to store the presence of keys in the Node48.
 // It is a bitfield of 256 bits, so it is stored in 4 uint64.
 type present48 [4]uint64
 
@@ -22,15 +22,15 @@ func (p *present48) clearAt(ch int) {
 	(*p)[ch>>n48bitShift] &= ^(1 << (ch % n48maskLen))
 }
 
-type node48 struct {
-	node
-	children [node48Max + 1]*nodeRef // +1 is for the zero byte child
+type Node48 struct {
+	Node
+	children [node48Max + 1]*NodeRef // +1 is for the zero byte child
 	keys     [node256Max]byte
 	present  present48 // need 256 bits for keys
 }
 
-// minimum returns the minimum leaf node.
-func (n *node48) minimum() *leaf {
+// minimum returns the minimum Leaf Node.
+func (n *Node48) minimum() *Leaf {
 	if n.children[node48Max] != nil {
 		return n.children[node48Max].minimum()
 	}
@@ -47,8 +47,8 @@ func (n *node48) minimum() *leaf {
 	return nil
 }
 
-// maximum returns the maximum leaf node.
-func (n *node48) maximum() *leaf {
+// maximum returns the maximum Leaf Node.
+func (n *Node48) maximum() *Leaf {
 	idx := node256Max - 1
 	for !n.hasChild(idx) {
 		idx--
@@ -58,7 +58,7 @@ func (n *node48) maximum() *leaf {
 }
 
 // index returns the index of the child with the given key.
-func (n *node48) index(kc keyChar) int {
+func (n *Node48) index(kc keyChar) int {
 	if kc.invalid {
 		return node48Max
 	}
@@ -74,7 +74,7 @@ func (n *node48) index(kc keyChar) int {
 }
 
 // childAt returns the child at the given index.
-func (n *node48) childAt(idx int) **nodeRef {
+func (n *Node48) childAt(idx int) **NodeRef {
 	if idx < 0 || idx >= len(n.children) {
 		return &nodeNotFound
 	}
@@ -82,21 +82,21 @@ func (n *node48) childAt(idx int) **nodeRef {
 	return &n.children[idx]
 }
 
-func (n *node48) allChildren() []*nodeRef {
+func (n *Node48) allChildren() []*NodeRef {
 	return n.children[:]
 }
 
-// hasCapacityForChild returns true if the node has room for more children.
-func (n *node48) hasCapacityForChild() bool {
+// hasCapacityForChild returns true if the Node has room for more children.
+func (n *Node48) hasCapacityForChild() bool {
 	return n.childrenLen < node48Max
 }
 
-// grow converts the node to a node256.
-func (n *node48) grow() *nodeRef {
+// grow converts the Node to a Node256.
+func (n *Node48) grow() *NodeRef {
 	an256 := factory.newNode256()
 	n256 := an256.node256()
 
-	copyNode(&n256.node, &n.node)
+	copyNode(&n256.Node, &n.Node)
 	n256.children[node256Max] = n.children[node48Max] // copy zero byte child
 
 	for i := 0; i < node256Max; i++ {
@@ -108,17 +108,17 @@ func (n *node48) grow() *nodeRef {
 	return an256
 }
 
-// isReadyToShrink returns true if the node can be shrunk to a smaller node type.
-func (n *node48) isReadyToShrink() bool {
+// isReadyToShrink returns true if the Node can be shrunk to a smaller Node type.
+func (n *Node48) isReadyToShrink() bool {
 	return n.childrenLen < node48Min
 }
 
-// shrink converts the node to a node16.
-func (n *node48) shrink() *nodeRef {
+// shrink converts the Node to a Node16.
+func (n *Node48) shrink() *NodeRef {
 	an16 := factory.newNode16()
 	n16 := an16.node16()
 
-	copyNode(&n16.node, &n.node)
+	copyNode(&n16.Node, &n.Node)
 	n16.children[node16Max] = n.children[node48Max]
 	numChildren := 0
 
@@ -141,18 +141,18 @@ func (n *node48) shrink() *nodeRef {
 	return an16
 }
 
-func (n *node48) hasChild(idx int) bool {
+func (n *Node48) hasChild(idx int) bool {
 	return n.present.hasChild(idx)
 }
 
-// addChild adds a new child to the node.
-func (n *node48) addChild(kc keyChar, child *nodeRef) {
+// addChild adds a new child to the Node.
+func (n *Node48) addChild(kc keyChar, child *NodeRef) {
 	pos := n.findInsertPos(kc)
 	n.insertChildAt(pos, kc.ch, child)
 }
 
 // find the insert position for the new child.
-func (n *node48) findInsertPos(kc keyChar) int {
+func (n *Node48) findInsertPos(kc keyChar) int {
 	if kc.invalid {
 		return node48Max
 	}
@@ -166,7 +166,7 @@ func (n *node48) findInsertPos(kc keyChar) int {
 }
 
 // insertChildAt inserts a child at the given position.
-func (n *node48) insertChildAt(pos int, ch byte, child *nodeRef) {
+func (n *Node48) insertChildAt(pos int, ch byte, child *NodeRef) {
 	if pos == node48Max {
 		// insert the child at the zero byte child reference
 		n.children[node48Max] = child
@@ -180,7 +180,7 @@ func (n *node48) insertChildAt(pos int, ch byte, child *nodeRef) {
 }
 
 // deleteChild removes the child with the given key.
-func (n *node48) deleteChild(kc keyChar) int {
+func (n *Node48) deleteChild(kc keyChar) int {
 	if kc.invalid {
 		// clear the zero byte child reference
 		n.children[node48Max] = nil

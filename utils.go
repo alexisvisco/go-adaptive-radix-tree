@@ -8,8 +8,8 @@ func minInt(a, b int) int {
 	return b
 }
 
-// copy the node from src to dst.
-func copyNode(dst *node, src *node) {
+// copy the Node from src to dst.
+func copyNode(dst *Node, src *Node) {
 	if dst == nil || src == nil {
 		return
 	}
@@ -18,7 +18,7 @@ func copyNode(dst *node, src *node) {
 	dst.prefix = src.prefix
 }
 
-// find the child node index by key.
+// find the child Node index by key.
 func findIndex(keys []byte, ch byte) int {
 	for i, key := range keys {
 		if key == ch {
@@ -43,8 +43,8 @@ func findLongestCommonPrefix(key1 Key, key2 Key, keyOffset int) int {
 	return idx - keyOffset
 }
 
-// nodeMinimum returns the minimum leaf node.
-func nodeMinimum(children []*nodeRef) *leaf {
+// nodeMinimum returns the minimum Leaf Node.
+func nodeMinimum(children []*NodeRef) *Leaf {
 	numChildren := len(children)
 	if numChildren == 0 {
 		return nil
@@ -64,8 +64,8 @@ func nodeMinimum(children []*nodeRef) *leaf {
 	return nil
 }
 
-// nodeMaximum returns the maximum leaf node.
-func nodeMaximum(children []*nodeRef) *leaf {
+// nodeMaximum returns the maximum Leaf Node.
+func nodeMaximum(children []*NodeRef) *Leaf {
 	for i := len(children) - 1; i >= 0; i-- {
 		if children[i] != nil {
 			return children[i].maximum()

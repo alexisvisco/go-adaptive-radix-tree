@@ -1,7 +1,7 @@
 package art
 
-// present16 is a bitfield to store the presence of keys in the node16.
-// node16 needs 16 bits to store the presence of keys.
+// present16 is a bitfield to store the presence of keys in the Node16.
+// Node16 needs 16 bits to store the presence of keys.
 type present16 uint16
 
 func (p present16) hasChild(idx int) bool {
@@ -26,26 +26,26 @@ func (p *present16) shiftLeft(idx int) {
 	*p |= ((*p & (1 << (idx + 1))) >> 1)
 }
 
-// node16 represents a node with 16 children.
-type node16 struct {
-	node
-	children [node16Max + 1]*nodeRef // +1 is for the zero byte child
+// Node16 represents a Node with 16 children.
+type Node16 struct {
+	Node
+	children [node16Max + 1]*NodeRef // +1 is for the zero byte child
 	keys     [node16Max]byte
 	present  present16
 }
 
-// minimum returns the minimum leaf node.
-func (n *node16) minimum() *leaf {
+// minimum returns the minimum Leaf Node.
+func (n *Node16) minimum() *Leaf {
 	return nodeMinimum(n.children[:])
 }
 
-// maximum returns the maximum leaf node.
-func (n *node16) maximum() *leaf {
+// maximum returns the maximum Leaf Node.
+func (n *Node16) maximum() *Leaf {
 	return nodeMaximum(n.children[:n.childrenLen])
 }
 
 // index returns the child index for the given key.
-func (n *node16) index(kc keyChar) int {
+func (n *Node16) index(kc keyChar) int {
 	if kc.invalid {
 		return node16Max
 	}
@@ -54,7 +54,7 @@ func (n *node16) index(kc keyChar) int {
 }
 
 // childAt returns the child at the given index.
-func (n *node16) childAt(idx int) **nodeRef {
+func (n *Node16) childAt(idx int) **NodeRef {
 	if idx < 0 || idx >= len(n.children) {
 		return &nodeNotFound
 	}
@@ -62,21 +62,21 @@ func (n *node16) childAt(idx int) **nodeRef {
 	return &n.children[idx]
 }
 
-func (n *node16) allChildren() []*nodeRef {
+func (n *Node16) allChildren() []*NodeRef {
 	return n.children[:]
 }
 
-// hasCapacityForChild returns true if the node has room for more children.
-func (n *node16) hasCapacityForChild() bool {
+// hasCapacityForChild returns true if the Node has room for more children.
+func (n *Node16) hasCapacityForChild() bool {
 	return n.childrenLen < node16Max
 }
 
-// grow converts the node to a node48.
-func (n *node16) grow() *nodeRef {
+// grow converts the Node to a Node48.
+func (n *Node16) grow() *NodeRef {
 	an48 := factory.newNode48()
 	n48 := an48.node48()
 
-	copyNode(&n48.node, &n.node)
+	copyNode(&n48.Node, &n.Node)
 	n48.children[node48Max] = n.children[node16Max] // copy zero byte child
 
 	for numChildren, i := 0, 0; i < int(n.childrenLen); i++ {
@@ -92,17 +92,17 @@ func (n *node16) grow() *nodeRef {
 	return an48
 }
 
-// caShrinkNode returns true if the node can be shriken.
-func (n *node16) isReadyToShrink() bool {
+// caShrinkNode returns true if the Node can be shriken.
+func (n *Node16) isReadyToShrink() bool {
 	return n.childrenLen < node16Min
 }
 
-// shrink converts the node16 into the node4.
-func (n *node16) shrink() *nodeRef {
+// shrink converts the Node16 into the Node4.
+func (n *Node16) shrink() *NodeRef {
 	an4 := factory.newNode4()
 	n4 := an4.node4()
 
-	copyNode(&n4.node, &n.node)
+	copyNode(&n4.Node, &n.Node)
 	n4.children[node4Max] = n.children[node16Max]
 
 	for i := 0; i < node4Max; i++ {
@@ -121,19 +121,19 @@ func (n *node16) shrink() *nodeRef {
 	return an4
 }
 
-func (n *node16) hasChild(idx int) bool {
+func (n *Node16) hasChild(idx int) bool {
 	return n.present.hasChild(idx)
 }
 
-// addChild adds a new child to the node.
-func (n *node16) addChild(kc keyChar, child *nodeRef) {
+// addChild adds a new child to the Node.
+func (n *Node16) addChild(kc keyChar, child *NodeRef) {
 	pos := n.findInsertPos(kc)
 	n.makeRoom(pos)
 	n.insertChildAt(pos, kc.ch, child)
 }
 
 // find the insert position for the new child.
-func (n *node16) findInsertPos(kc keyChar) int {
+func (n *Node16) findInsertPos(kc keyChar) int {
 	if kc.invalid {
 		return node16Max
 	}
@@ -148,7 +148,7 @@ func (n *node16) findInsertPos(kc keyChar) int {
 }
 
 // makeRoom makes room for a new child at the given position.
-func (n *node16) makeRoom(pos int) {
+func (n *Node16) makeRoom(pos int) {
 	if pos < 0 || pos >= int(n.childrenLen) {
 		return
 	}
@@ -163,7 +163,7 @@ func (n *node16) makeRoom(pos int) {
 }
 
 // insertChildAt inserts a new child at the given position.
-func (n *node16) insertChildAt(pos int, ch byte, child *nodeRef) {
+func (n *Node16) insertChildAt(pos int, ch byte, child *NodeRef) {
 	if pos < 0 || pos > node16Max {
 		return
 	}
@@ -178,8 +178,8 @@ func (n *node16) insertChildAt(pos int, ch byte, child *nodeRef) {
 	}
 }
 
-// deleChild removes a child from the node.
-func (n *node16) deleteChild(kc keyChar) int {
+// deleChild removes a child from the Node.
+func (n *Node16) deleteChild(kc keyChar) int {
 	if kc.invalid {
 		// clear the zero byte child reference
 		n.children[node16Max] = nil
@@ -192,7 +192,7 @@ func (n *node16) deleteChild(kc keyChar) int {
 }
 
 // deleteChildAt removes a child at the given position.
-func (n *node16) deleteChildAt(idx int) {
+func (n *Node16) deleteChildAt(idx int) {
 	childrenLen := int(n.childrenLen)
 	if idx >= childrenLen {
 		return
@@ -210,8 +210,8 @@ func (n *node16) deleteChildAt(idx int) {
 	n.childrenLen--
 }
 
-// clearLastElement clears the last element in the node.
-func (n *node16) clearLastElement() {
+// clearLastElement clears the last element in the Node.
+func (n *Node16) clearLastElement() {
 	lastIdx := int(n.childrenLen)
 	n.keys[lastIdx] = 0
 	n.present.clearAt(lastIdx)

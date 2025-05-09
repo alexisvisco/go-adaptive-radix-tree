@@ -5,14 +5,14 @@ import (
 )
 
 // nodeFactory is an interface for creating various types of ART nodes,
-// including nodes with different capacities and leaf nodes.
+// including nodes with different capacities and Leaf nodes.
 type nodeFactory interface {
-	newNode4() *nodeRef
-	newNode16() *nodeRef
-	newNode48() *nodeRef
-	newNode256() *nodeRef
+	newNode4() *NodeRef
+	newNode16() *NodeRef
+	newNode48() *NodeRef
+	newNode256() *NodeRef
 
-	newLeaf(key Key, value interface{}) *nodeRef
+	newLeaf(key Key, value interface{}) *NodeRef
 }
 
 // make sure that objFactory implements all methods of nodeFactory interface.
@@ -41,46 +41,46 @@ func newObjFactory() nodeFactory {
 }
 
 // Simple obj factory implementation.
-func (f *objFactory) newNode4() *nodeRef {
-	return &nodeRef{
-		kind: Node4,
-		ref:  unsafe.Pointer(new(node4)), //#nosec:G103
+func (f *objFactory) newNode4() *NodeRef {
+	return &NodeRef{
+		kind: Node4Kind,
+		ref:  unsafe.Pointer(new(Node4)), //#nosec:G103
 	}
 }
 
-// newNode16 creates a new node16 as a nodeRef.
-func (f *objFactory) newNode16() *nodeRef {
-	return &nodeRef{
-		kind: Node16,
-		ref:  unsafe.Pointer(new(node16)), //#nosec:G103
+// newNode16 creates a new Node16 as a NodeRef.
+func (f *objFactory) newNode16() *NodeRef {
+	return &NodeRef{
+		kind: Node16Kind,
+		ref:  unsafe.Pointer(new(Node16)), //#nosec:G103
 	}
 }
 
-// newNode48 creates a new node48 as a nodeRef.
-func (f *objFactory) newNode48() *nodeRef {
-	return &nodeRef{
-		kind: Node48,
-		ref:  unsafe.Pointer(new(node48)), //#nosec:G103
+// newNode48 creates a new Node48 as a NodeRef.
+func (f *objFactory) newNode48() *NodeRef {
+	return &NodeRef{
+		kind: Node48Kind,
+		ref:  unsafe.Pointer(new(Node48)), //#nosec:G103
 	}
 }
 
-// newNode256 creates a new node256 as a nodeRef.
-func (f *objFactory) newNode256() *nodeRef {
-	return &nodeRef{
-		kind: Node256,
-		ref:  unsafe.Pointer(new(node256)), //#nosec:G103
+// newNode256 creates a new Node256 as a NodeRef.
+func (f *objFactory) newNode256() *NodeRef {
+	return &NodeRef{
+		kind: Node256Kind,
+		ref:  unsafe.Pointer(new(Node256)), //#nosec:G103
 	}
 }
 
-// newLeaf creates a new leaf node as a nodeRef.
+// newLeaf creates a new Leaf Node as a NodeRef.
 // It clones the key to avoid any source key mutation.
-func (f *objFactory) newLeaf(key Key, value interface{}) *nodeRef {
+func (f *objFactory) newLeaf(key Key, value interface{}) *NodeRef {
 	keyClone := make(Key, len(key))
 	copy(keyClone, key)
 
-	return &nodeRef{
-		kind: Leaf,
-		ref: unsafe.Pointer(&leaf{ //#nosec:G103
+	return &NodeRef{
+		kind: LeafKind,
+		ref: unsafe.Pointer(&Leaf{ //#nosec:G103
 			key:   keyClone,
 			value: value,
 		}),

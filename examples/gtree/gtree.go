@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	art "github.com/plar/go-adaptive-radix-tree/v2"
+	art "github.com/alexisvisco/go-adaptive-radix-tree/v2"
 )
 
 // GTree is a generic tree that supports any type for keys and values.
@@ -69,7 +69,7 @@ func (gt *GTree[K, V]) Size() int {
 }
 
 // ForEach performs the given callback on each node.
-func (gt *GTree[K, V]) ForEach(callback func(node art.Node) bool, options ...int) {
+func (gt *GTree[K, V]) ForEach(callback func(node art.NodeKV) bool, options ...int) {
 	gt.tree.ForEach(callback, options...)
 }
 

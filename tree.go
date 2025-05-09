@@ -49,7 +49,7 @@ func (k Key) isValid(idx int) bool {
 type tree struct {
 	version int      // version is used to detect concurrent modifications
 	size    int      // size is the number of elements in the tree
-	root    *nodeRef // root is the root node of the tree
+	root    *NodeRef // root is the root Node of the tree
 }
 
 // make sure that tree implements all methods from the Tree interface.
@@ -88,8 +88,8 @@ func (tr *tree) Search(key Key) (Value, bool) {
 	current := tr.root
 	for current != nil {
 		if current.isLeaf() {
-			leaf := current.leaf()
-			if leaf.match(key) {
+			leaf := current.Leaf()
+			if leaf.Match(key) {
 				return leaf.value, true
 			}
 

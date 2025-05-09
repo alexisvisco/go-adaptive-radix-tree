@@ -81,7 +81,7 @@ func (ds *testDataset) assert(t *testing.T, tree *tree) {
 	switch root := ds.expectedRoot.(type) {
 	case Kind:
 		assert.Equal(t, root, tree.root.kind, ds.name)
-	case *nodeRef:
+	case *NodeRef:
 		assert.Equal(t, root, tree.root, ds.name)
 	case nil:
 		assert.Nil(t, tree.root, ds.name)
@@ -97,18 +97,18 @@ type treeStats struct {
 	node256Count int
 }
 
-// processStats processes the node statistics.
-func (stats *treeStats) processStats(node Node) bool {
+// processStats processes the Node statistics.
+func (stats *treeStats) processStats(node NodeKV) bool {
 	switch node.Kind() {
-	case Node4:
+	case Node4Kind:
 		stats.node4Count++
-	case Node16:
+	case Node16Kind:
 		stats.node16Count++
-	case Node48:
+	case Node48Kind:
 		stats.node48Count++
-	case Node256:
+	case Node256Kind:
 		stats.node256Count++
-	case Leaf:
+	case LeafKind:
 		stats.leafCount++
 	}
 
@@ -116,7 +116,7 @@ func (stats *treeStats) processStats(node Node) bool {
 }
 
 // iterateWithCallback iterates the tree with the given callback.
-func iterateWithCallback(it Iterator, cb func(node Node) bool) {
+func iterateWithCallback(it Iterator, cb func(node NodeKV) bool) {
 	for it.HasNext() {
 		node, _ := it.Next()
 		if !cb(node) {

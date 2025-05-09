@@ -48,8 +48,8 @@ func TestLongestCommonPrefix(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			l1 := factory.newLeaf(tt.l1, string(tt.l1)).leaf()
-			l2 := factory.newLeaf(tt.l2, string(tt.l2)).leaf()
+			l1 := factory.newLeaf(tt.l1, string(tt.l1)).Leaf()
+			l2 := factory.newLeaf(tt.l2, string(tt.l2)).Leaf()
 			actual := findLongestCommonPrefix(l1.key, l2.key, tt.offset)
 			assert.Equal(t, tt.expected, actual)
 		})
@@ -155,9 +155,9 @@ func TestTreeInsertAndNodeGrowth(t *testing.T) {
 		totalNodes byte
 		expected   Kind
 	}{
-		{5, Node16},
-		{17, Node48},
-		{49, Node256},
+		{5, Node16Kind},
+		{17, Node48Kind},
+		{49, Node256Kind},
 	}
 
 	for _, tc := range testCases {
@@ -217,7 +217,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			insertItems:  []string{"test1", "test2"},
 			deleteItems:  []string{"test2"},
 			expectedSize: 1,
-			expectedRoot: Leaf,
+			expectedRoot: LeafKind,
 			deleteStatus: true,
 		},
 		{
@@ -233,7 +233,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			insertItems:  []string{"1", "2", "3", "4", "5"},
 			deleteItems:  []string{"1"},
 			expectedSize: 4,
-			expectedRoot: Node4,
+			expectedRoot: Node4Kind,
 			deleteStatus: true,
 		},
 		{
@@ -241,7 +241,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			insertItems:  []string{"1", "2", "3", "4", "5"},
 			deleteItems:  []string{"123"},
 			expectedSize: 5,
-			expectedRoot: Node16,
+			expectedRoot: Node16Kind,
 			deleteStatus: false},
 		{
 			name:         "Insert 5 Delete 5",
@@ -256,7 +256,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			insertItems:  []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"},
 			deleteItems:  []string{"2"},
 			expectedSize: 16,
-			expectedRoot: Node16,
+			expectedRoot: Node16Kind,
 			deleteStatus: true,
 		},
 		{
@@ -276,7 +276,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			}),
 			deleteItems:  []byte{byte(123)},
 			expectedSize: 49,
-			expectedRoot: Node256,
+			expectedRoot: Node256Kind,
 			deleteStatus: false},
 		{
 			name: "Insert 49 Delete 1",
@@ -287,7 +287,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			}),
 			deleteItems:  []byte{byte(2)},
 			expectedSize: 48,
-			expectedRoot: Node48,
+			expectedRoot: Node48Kind,
 			deleteStatus: true,
 		},
 		{
@@ -339,7 +339,7 @@ func TestTreeInsertAndDeleteOperations(t *testing.T) { //nolint:funlen,cyclop
 			}),
 			deleteItems:  []byte{2},
 			expectedSize: 255,
-			expectedRoot: Node256,
+			expectedRoot: Node256Kind,
 			deleteStatus: true,
 		},
 		{
@@ -423,7 +423,7 @@ func TestInsertTwoAndDeleteOne(t *testing.T) {
 	assert.False(t, found)
 
 	assert.Equal(t, 1, tree.size)
-	assert.Equal(t, Leaf, tree.root.kind)
+	assert.Equal(t, LeafKind, tree.root.kind)
 }
 
 func TestInsertTwoAndDeleteTwo(t *testing.T) {
@@ -542,7 +542,7 @@ func TestInsertDeleteWithZeroChild(t *testing.T) {
 	all := toNode(tree.root).allChildren()
 	childZero := *all[len(all)-1]
 	assert.NotNil(t, childZero)
-	assert.Equal(t, Leaf, childZero.kind)
+	assert.Equal(t, LeafKind, childZero.kind)
 	assert.Equal(t, Key("test/a"), childZero.Key())
 
 	for _, w := range keys {
@@ -586,7 +586,7 @@ func TestTreeAPI(t *testing.T) { //nolint:funlen
 	require.Error(t, err)
 	assert.Equal(t, ErrNoMoreNodes, err)
 
-	tree.ForEach(func(Node) bool {
+	tree.ForEach(func(NodeKV) bool {
 		t.Fatalf("Should not be called on an empty tree")
 
 		return true
@@ -612,7 +612,7 @@ func TestTreeAPI(t *testing.T) { //nolint:funlen
 	assert.True(t, found)
 	assert.Equal(t, "Ha-ha, Again? Go away!", value)
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		assert.Equal(t, Key("Hi, I'm Key"), node.Key())
 		assert.Equal(t, "Ha-ha, Again? Go away!", node.Value())
 
@@ -682,7 +682,7 @@ func TestTreeInsertAndSearchKeyWithNull(t *testing.T) {
 	expected := []string{"ab", "ab\x00", "ac", "ad"}
 	traversal := []string{}
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		traversal = append(traversal, string(node.Key()))
 
 		return true
@@ -775,7 +775,7 @@ func TestNodesWithNullKeys16(t *testing.T) { //nolint:funlen
 	}
 	traversal := []string{}
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		traversal = append(traversal, string(node.Key()))
 
 		return true
@@ -828,7 +828,7 @@ func TestNodesWithNullKeys48(t *testing.T) { //nolint:funlen
 
 	traversal := []string{}
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		s, _ := node.Value().(string)
 		traversal = append(traversal, s)
 
@@ -854,7 +854,7 @@ func TestNodesWithNullKeys256(t *testing.T) { //nolint:funlen
 	tree := newTree()
 	terms := []string{"b"}
 
-	// build list of terms which will use node256
+	// build list of terms which will use Node256
 	for i0 := 0; i0 <= 260; i0++ {
 		var term string
 		if i0 < 130 {
@@ -871,7 +871,7 @@ func TestNodesWithNullKeys256(t *testing.T) { //nolint:funlen
 		assert.False(t, updated)
 	}
 
-	// insert a term with null prefix to node256
+	// insert a term with null prefix to Node256
 	term := "a"
 	_, updated := tree.Insert(Key(term), term)
 	assert.False(t, updated)
@@ -893,7 +893,7 @@ func TestNodesWithNullKeys256(t *testing.T) { //nolint:funlen
 	termsCopy = append(termsCopy, term) //nolint:makezero
 	traversal := []string{}
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		s, _ := node.Value().(string)
 		traversal = append(traversal, s)
 
@@ -902,7 +902,7 @@ func TestNodesWithNullKeys256(t *testing.T) { //nolint:funlen
 	sort.Strings(termsCopy)
 	assert.Equal(t, termsCopy, traversal)
 
-	// delete a term with null prefix from node256
+	// delete a term with null prefix from Node256
 	v, deleted := tree.Delete(Key(term))
 	assert.True(t, deleted)
 	assert.Equal(t, term, v)

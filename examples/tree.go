@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	art "github.com/plar/go-adaptive-radix-tree/v2"
+	art "github.com/alexisvisco/go-adaptive-radix-tree/v2"
 )
 
 func DumpTree() {
@@ -24,7 +24,7 @@ func SimpleTree() {
 		fmt.Printf("Search value=%v\n", value)
 	}
 
-	tree.ForEach(func(node art.Node) bool {
+	tree.ForEach(func(node art.NodeKV) bool {
 		fmt.Printf("Callback value=%v\n", node.Value())
 		return true
 	})

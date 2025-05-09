@@ -2,19 +2,19 @@ package art
 
 import "bytes"
 
-// Leaf node stores the key-value pair.
-type leaf struct {
+// LeafKind Node stores the key-value pair.
+type Leaf struct {
 	key   Key
 	value interface{}
 }
 
-// match returns true if the leaf node's key matches the given key.
-func (l *leaf) match(key Key) bool {
+// Match returns true if the Leaf Node's key matches the given key.
+func (l *Leaf) Match(key Key) bool {
 	return len(l.key) == len(key) && bytes.Equal(l.key, key)
 }
 
-// prefixMatch returns true if the leaf node's key has the given key as a prefix.
-func (l *leaf) prefixMatch(key Key) bool {
+// PrefixMatch returns true if the LeafKind Node's key has the given key as a prefix.
+func (l *Leaf) PrefixMatch(key Key) bool {
 	if key == nil || len(l.key) < len(key) {
 		return false
 	}

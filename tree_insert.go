@@ -1,8 +1,8 @@
 package art
 
 // insertRecursively inserts a new key-value pair into the tree.
-// nrp means Node Reference Pointer.
-func (tr *tree) insertRecursively(nrp **nodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
+// nrp means NodeKV Reference Pointer.
+func (tr *tree) insertRecursively(nrp **NodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
 	nr := *nrp
 	if nr == nil {
 		return tr.insertNewLeaf(nrp, key, value)
@@ -15,52 +15,52 @@ func (tr *tree) insertRecursively(nrp **nodeRef, key Key, value Value, keyOffset
 	return tr.handleNodeInsertion(nrp, key, value, keyOffset)
 }
 
-func (tr *tree) insertNewLeaf(nrp **nodeRef, key Key, value Value) (Value, treeOpResult) {
+func (tr *tree) insertNewLeaf(nrp **NodeRef, key Key, value Value) (Value, treeOpResult) {
 	replaceRef(nrp, factory.newLeaf(key, value))
 
 	return nil, treeOpInserted
 }
 
-func (tr *tree) handleLeafInsertion(nrp **nodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
+func (tr *tree) handleLeafInsertion(nrp **NodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
 	nr := *nrp
 
-	if leaf := nr.leaf(); leaf.match(key) {
+	if leaf := nr.Leaf(); leaf.Match(key) {
 		oldValue := leaf.value
 		leaf.value = value
 
 		return oldValue, treeOpUpdated
 	}
 
-	// Insert a new leaf by splitting
-	// the old leaf to a node4 and adding the new leaf
+	// Insert a new LeafKind by splitting
+	// the old LeafKind to a Node4 and adding the new LeafKind
 	return tr.splitLeaf(nrp, key, value, keyOffset)
 }
 
-func (tr *tree) splitLeaf(nrpCurLeaf **nodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
+func (tr *tree) splitLeaf(nrpCurLeaf **NodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
 	nrCurLeaf := *nrpCurLeaf
-	curLeaf := nrCurLeaf.leaf()
+	curLeaf := nrCurLeaf.Leaf()
 
 	keysLCP := findLongestCommonPrefix(curLeaf.key, key, keyOffset)
 
-	// Create a new node4 with the longest common prefix
-	// between the old leaf and the new leaf key.
+	// Create a new Node4 with the longest common prefix
+	// between the old LeafKind and the new LeafKind key.
 	nr4 := factory.newNode4()
 	nr4.setPrefix(key[keyOffset:], keysLCP)
 	keyOffset += keysLCP
 
 	// branch by the first differing character
-	// add the old leaf and the new leaf as children
-	// to a newly created node4.
-	nr4.addChild(curLeaf.key.charAt(keyOffset), nrCurLeaf)           // old leaf
-	nr4.addChild(key.charAt(keyOffset), factory.newLeaf(key, value)) // new leaf
+	// add the old LeafKind and the new LeafKind as children
+	// to a newly created Node4.
+	nr4.addChild(curLeaf.key.charAt(keyOffset), nrCurLeaf)           // old LeafKind
+	nr4.addChild(key.charAt(keyOffset), factory.newLeaf(key, value)) // new LeafKind
 
-	// replace the old leaf with the new node4
+	// replace the old LeafKind with the new Node4
 	replaceRef(nrpCurLeaf, nr4)
 
 	return nil, treeOpInserted
 }
 
-func (tr *tree) handleNodeInsertion(nrp **nodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
+func (tr *tree) handleNodeInsertion(nrp **NodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
 	nr := *nrp
 
 	n := nr.node()
@@ -76,7 +76,7 @@ func (tr *tree) handleNodeInsertion(nrp **nodeRef, key Key, value Value, keyOffs
 	return tr.continueInsertion(nrp, key, value, keyOffset)
 }
 
-func (tr *tree) splitNode(nrp **nodeRef, key Key, value Value, keyOffset int, mismatchIdx int) (Value, treeOpResult) {
+func (tr *tree) splitNode(nrp **NodeRef, key Key, value Value, keyOffset int, mismatchIdx int) (Value, treeOpResult) {
 	nr := *nrp
 	n := nr.node()
 
@@ -90,7 +90,7 @@ func (tr *tree) splitNode(nrp **nodeRef, key Key, value Value, keyOffset int, mi
 	return nil, treeOpInserted
 }
 
-func (tr *tree) reassignPrefix(newNRP *nodeRef, curNRP *nodeRef, key Key, value Value, keyOffset int, mismatchIdx int) {
+func (tr *tree) reassignPrefix(newNRP *NodeRef, curNRP *NodeRef, key Key, value Value, keyOffset int, mismatchIdx int) {
 	curNode := curNRP.node()
 	curNode.prefixLen -= uint16(mismatchIdx + 1) //#nosec:G115
 
@@ -104,20 +104,20 @@ func (tr *tree) reassignPrefix(newNRP *nodeRef, curNRP *nodeRef, key Key, value 
 		curNode.prefix[i] = leaf.key[keyOffset+mismatchIdx+i+1]
 	}
 
-	// Insert the new leaf
+	// Insert the new LeafKind
 	newNRP.addChild(key.charAt(idx), factory.newLeaf(key, value))
 }
 
-func (tr *tree) continueInsertion(nrp **nodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
+func (tr *tree) continueInsertion(nrp **NodeRef, key Key, value Value, keyOffset int) (Value, treeOpResult) {
 	nr := *nrp
 
 	nextNRP := nr.findChildByKey(key, keyOffset)
 	if *nextNRP != nil {
-		// Found a partial match, continue inserting
+		// Found a partial Match, continue inserting
 		return tr.insertRecursively(nextNRP, key, value, keyOffset+1)
 	}
 
-	// No child found, create a new leaf node
+	// No child found, create a new LeafKind Node
 	nr.addChild(key.charAt(keyOffset), factory.newLeaf(key, value))
 
 	return nil, treeOpInserted

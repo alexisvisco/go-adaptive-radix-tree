@@ -9,7 +9,7 @@ const (
 )
 
 // traverseFunc defines the function for tree traversal.
-// It returns the index of the next child node to traverse.
+// It returns the index of the next child Node to traverse.
 // The second return value indicates whether there are more child nodes to traverse.
 type traverseFunc func() (int, bool)
 
@@ -93,7 +93,7 @@ type traverse48Context struct {
 	curKeyIdx     int
 	curKeyCh      byte
 	zeroChildDone bool
-	n48           *node48
+	n48           *Node48
 }
 
 // ascTraversal traverses the children in ascending order.
@@ -138,7 +138,7 @@ func (ctx *traverse48Context) descTraversal() (int, bool) {
 
 // newTraverse48Func creates a new traverseFunc for nodes with 48 children.
 // The reverse parameter indicates whether to traverse the children in reverse order.
-func newTraverse48Func(n48 *node48, reverse bool) traverseFunc {
+func newTraverse48Func(n48 *Node48, reverse bool) traverseFunc {
 	ctx := &traverse48Context{
 		curKeyIdx: ternary(reverse, node256Max-1, 0),
 		n48:       n48,
@@ -147,19 +147,19 @@ func newTraverse48Func(n48 *node48, reverse bool) traverseFunc {
 	return ternary(reverse, ctx.descTraversal, ctx.ascTraversal)
 }
 
-func newTraverseFunc(n *nodeRef, reverse bool) traverseFunc {
+func newTraverseFunc(n *NodeRef, reverse bool) traverseFunc {
 	if n == nil {
 		return noopTraverseFunc
 	}
 
 	switch n.kind { //nolint:exhaustive
-	case Node4:
+	case Node4Kind:
 		return newTraverseGenericFunc(node4Max, reverse)
-	case Node16:
+	case Node16Kind:
 		return newTraverseGenericFunc(node16Max, reverse)
-	case Node48:
+	case Node48Kind:
 		return newTraverse48Func(n.node48(), reverse)
-	case Node256:
+	case Node256Kind:
 		return newTraverseGenericFunc(node256Max, reverse)
 	default:
 		return noopTraverseFunc
@@ -193,12 +193,12 @@ func traverseFilter(opts traverseOpts, callback Callback) Callback {
 		return callback
 	}
 
-	return func(node Node) bool {
-		if opts.hasLeaf() && node.Kind() == Leaf {
+	return func(node NodeKV) bool {
+		if opts.hasLeaf() && node.Kind() == LeafKind {
 			return callback(node)
 		}
 
-		if opts.hasNode() && node.Kind() != Leaf {
+		if opts.hasNode() && node.Kind() != LeafKind {
 			return callback(node)
 		}
 
@@ -206,7 +206,7 @@ func traverseFilter(opts traverseOpts, callback Callback) Callback {
 	}
 }
 
-func (tr *tree) forEachRecursively(current *nodeRef, callback Callback, reverse bool) traverseAction {
+func (tr *tree) forEachRecursively(current *NodeRef, callback Callback, reverse bool) traverseAction {
 	if current == nil {
 		return traverseContinue
 	}
@@ -221,7 +221,7 @@ func (tr *tree) forEachRecursively(current *nodeRef, callback Callback, reverse 
 	return tr.traverseChildren(nextFn, children, callback, reverse)
 }
 
-func (tr *tree) traverseChildren(nextFn traverseFunc, children []*nodeRef, cb Callback, reverse bool) traverseAction {
+func (tr *tree) traverseChildren(nextFn traverseFunc, children []*NodeRef, cb Callback, reverse bool) traverseAction {
 	for {
 		idx, hasMore := nextFn()
 		if !hasMore {
@@ -239,15 +239,15 @@ func (tr *tree) traverseChildren(nextFn traverseFunc, children []*nodeRef, cb Ca
 }
 
 func (tr *tree) forEachPrefix(key Key, callback Callback, opts int) traverseAction {
-	opts &= (TraverseLeaf | TraverseReverse) // keep only leaf and reverse options
+	opts &= (TraverseLeaf | TraverseReverse) // keep only LeafKind and reverse options
 
-	tr.ForEach(func(n Node) bool {
-		current, ok := n.(*nodeRef)
+	tr.ForEach(func(n NodeKV) bool {
+		current, ok := n.(*NodeRef)
 		if !ok {
 			return false
 		}
 
-		if leaf := current.leaf(); leaf.prefixMatch(key) {
+		if leaf := current.Leaf(); leaf.PrefixMatch(key) {
 			return callback(current)
 		}
 

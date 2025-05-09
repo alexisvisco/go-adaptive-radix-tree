@@ -6,23 +6,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test basic properties and behavior of each node kind.
+// Test basic properties and behavior of each Node kind.
 func TestNodeKindProperties(t *testing.T) {
 	t.Parallel()
 
-	// Define a Table of Node Types to Test
+	// Define a Table of NodeKV Types to Test
 	nodeTests := []struct {
 		name string
-		node *nodeRef
+		node *NodeRef
 		kind Kind
 	}{
-		{"Node4 Test", factory.newNode4(), Node4},
-		{"Node16 Test", factory.newNode16(), Node16},
-		{"Node48 Test", factory.newNode48(), Node48},
-		{"Node256 Test", factory.newNode256(), Node256},
+		{"Node4Kind Test", factory.newNode4(), Node4Kind},
+		{"Node16Kind Test", factory.newNode16(), Node16Kind},
+		{"Node48Kind Test", factory.newNode48(), Node48Kind},
+		{"Node256Kind Test", factory.newNode256(), Node256Kind},
 	}
 
-	// Run Node Kind Tests
+	// Run NodeKV Kind Tests
 	for _, tt := range nodeTests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,14 +32,14 @@ func TestNodeKindProperties(t *testing.T) {
 		})
 	}
 
-	// Test Leaf Node
-	t.Run("Leaf Node Test", func(t *testing.T) {
+	// Test LeafKind NodeKV
+	t.Run("LeafKind NodeKV Test", func(t *testing.T) {
 		t.Parallel()
 
 		leaf := factory.newLeaf(Key("key"), "value")
 		assert.NotNil(t, leaf)
-		assert.Equal(t, Leaf, leaf.kind)
-		assert.Equal(t, "Leaf", leaf.kind.String())
+		assert.Equal(t, LeafKind, leaf.kind)
+		assert.Equal(t, "LeafKind", leaf.kind.String())
 		assert.Equal(t, Key("key"), leaf.Key())
 
 		val, ok := leaf.Value().(string)
@@ -51,7 +51,7 @@ func TestNodeKindProperties(t *testing.T) {
 func TestUnknownNode(t *testing.T) {
 	t.Parallel()
 
-	unknownNode := &nodeRef{kind: Kind(0xFF)}
+	unknownNode := &NodeRef{kind: Kind(0xFF)}
 	assert.Nil(t, unknownNode.maximum())
 	assert.Nil(t, unknownNode.minimum())
 }
@@ -61,28 +61,28 @@ func TestLeafFunctionality(t *testing.T) {
 
 	leaf := factory.newLeaf([]byte("key"), "value")
 	assert.NotNil(t, leaf)
-	assert.Equal(t, Leaf, leaf.kind)
+	assert.Equal(t, LeafKind, leaf.kind)
 
-	assert.False(t, leaf.leaf().match(Key("unknown-key")))
+	assert.False(t, leaf.Leaf().Match(Key("unknown-key")))
 
-	// Ensure we cannot shrink/grow leaf node
+	// Ensure we cannot shrink/grow LeafKind Node
 	assert.Nil(t, toNode(leaf).shrink())
 	assert.Nil(t, toNode(leaf).grow())
 }
 
-// Test matching behavior of leaf nodes.
+// Test matching behavior of LeafKind nodes.
 func TestLeafMatchBehavior(t *testing.T) {
 	t.Parallel()
 
 	leaf := factory.newLeaf(Key("key"), "value")
 
-	assert.False(t, leaf.leaf().match(Key("unknown-key")))
-	assert.False(t, leaf.leaf().match(nil))
-	assert.True(t, leaf.leaf().match(Key("key")))
+	assert.False(t, leaf.Leaf().Match(Key("unknown-key")))
+	assert.False(t, leaf.Leaf().Match(nil))
+	assert.True(t, leaf.Leaf().Match(Key("key")))
 
-	assert.False(t, leaf.leaf().prefixMatch(Key("unknown-key")))
-	assert.False(t, leaf.leaf().prefixMatch(nil))
-	assert.True(t, leaf.leaf().prefixMatch(Key("ke")))
+	assert.False(t, leaf.Leaf().PrefixMatch(Key("unknown-key")))
+	assert.False(t, leaf.Leaf().PrefixMatch(nil))
+	assert.True(t, leaf.Leaf().PrefixMatch(Key("ke")))
 }
 
 // Check the setting of prefixes.
@@ -121,13 +121,13 @@ func TestCopyNode(t *testing.T) {
 	t.Parallel()
 
 	// Define test data
-	src := &node{
+	src := &Node{
 		childrenLen: 3,
 		prefixLen:   5,
 		prefix:      [maxPrefixLen]byte{'a', 'b', 'c', 'd', 'e'},
 	}
 
-	dst := &node{
+	dst := &Node{
 		childrenLen: 0,
 		prefixLen:   0,
 		prefix:      [maxPrefixLen]byte{},
@@ -152,13 +152,13 @@ func TestNodeAddChildAndFindChild(t *testing.T) {
 
 	nodeKinds := []struct {
 		name        string
-		node        *nodeRef
+		node        *NodeRef
 		maxChildren int
 	}{
-		{"Node4", factory.newNode4(), node4Max},
-		{"Node16", factory.newNode16(), node16Max},
-		{"Node48", factory.newNode48(), node48Max},
-		{"Node256", factory.newNode256(), node256Max},
+		{"Node4Kind", factory.newNode4(), node4Max},
+		{"Node16Kind", factory.newNode16(), node16Max},
+		{"Node48Kind", factory.newNode48(), node48Max},
+		{"Node256Kind", factory.newNode256(), node256Max},
 	}
 
 	for _, n := range nodeKinds {
@@ -174,7 +174,7 @@ func TestNodeAddChildAndFindChild(t *testing.T) {
 			for i := 0; i < n.maxChildren; i++ {
 				leaf := n.node.findChildByKey(Key{byte(i)}, 0)
 				assert.NotNil(t, *leaf, "child should not be nil for key %d", i)
-				val, ok := (*leaf).leaf().value.(int)
+				val, ok := (*leaf).Leaf().value.(int)
 				assert.True(t, ok, "value should be of type int")
 				assert.Equal(t, i, val, "value should be %d", i)
 			}
@@ -186,7 +186,7 @@ func TestNodeAddChildAndFindChild(t *testing.T) {
 func TestNodeIndex(t *testing.T) {
 	t.Parallel()
 
-	nodes := []*nodeRef{
+	nodes := []*NodeRef{
 		factory.newNode4(),
 		factory.newNode16(),
 		factory.newNode48(),
@@ -197,16 +197,16 @@ func TestNodeIndex(t *testing.T) {
 		maxChildren := 0
 
 		switch n.kind {
-		case Node4:
+		case Node4Kind:
 			maxChildren = node4Max
-		case Node16:
+		case Node16Kind:
 			maxChildren = node16Max
-		case Node48:
+		case Node48Kind:
 			maxChildren = node48Max
-		case Node256:
+		case Node256Kind:
 			maxChildren = node256Max
-		case Leaf:
-			t.Fatal("Leaf node should not be tested here")
+		case LeafKind:
+			t.Fatal("LeafKind Node should not be tested here")
 		}
 
 		for i := 0; i < maxChildren; i++ {
@@ -220,12 +220,12 @@ func TestNodeIndex(t *testing.T) {
 	}
 }
 
-// Test minimum and maximum functionality to ensure they return correct leaf nodes.
+// Test minimum and maximum functionality to ensure they return correct LeafKind nodes.
 func TestNodesMinimumMaximum(t *testing.T) {
 	t.Parallel()
 
 	nodes := []struct {
-		node  *nodeRef
+		node  *NodeRef
 		count int
 	}{
 		{factory.newNode4(), 3},
@@ -254,7 +254,7 @@ func TestNodesMinimumMaximum(t *testing.T) {
 	}
 }
 
-// Test adding and finding children in a Node4.
+// Test adding and finding children in a Node4Kind.
 func TestNode4AddChildAndFindChild(t *testing.T) {
 	t.Parallel()
 
@@ -267,7 +267,7 @@ func TestNode4AddChildAndFindChild(t *testing.T) {
 	assert.Equal(t, child, *parent.findChildByKey(k, 0))
 }
 
-// Test that Node4 maintains sorted order when adding children.
+// Test that Node4Kind maintains sorted order when adding children.
 func TestNode4AddChildTwicePreserveSorted(t *testing.T) {
 	t.Parallel()
 
@@ -283,7 +283,7 @@ func TestNode4AddChildTwicePreserveSorted(t *testing.T) {
 	assert.Equal(t, byte(2), parent.node4().keys[1])
 }
 
-// Test Node4 maintains sorted order with multiple children.
+// Test Node4Kind maintains sorted order with multiple children.
 func TestNode4AddChild4PreserveSorted(t *testing.T) {
 	t.Parallel()
 
@@ -296,7 +296,7 @@ func TestNode4AddChild4PreserveSorted(t *testing.T) {
 	assert.Equal(t, []byte{1, 2, 3, 4}, parent.node4().keys[:])
 }
 
-// Test Node16 maintains sorted order with multiple children.
+// Test Node16Kind maintains sorted order with multiple children.
 func TestNode16AddChild16PreserveSorted(t *testing.T) {
 	t.Parallel()
 
@@ -312,18 +312,18 @@ func TestNode16AddChild16PreserveSorted(t *testing.T) {
 	}
 }
 
-// Test growing a node.
+// Test growing a Node.
 func TestNodeGrow(t *testing.T) {
 	t.Parallel()
 
 	nodeKinds := []struct {
 		name     string
-		node     *nodeRef
+		node     *NodeRef
 		expected Kind
 	}{
-		{"Node4", factory.newNode4(), Node16},
-		{"Node16", factory.newNode16(), Node48},
-		{"Node48", factory.newNode48(), Node256},
+		{"Node4Kind", factory.newNode4(), Node16Kind},
+		{"Node16Kind", factory.newNode16(), Node48Kind},
+		{"Node48Kind", factory.newNode48(), Node256Kind},
 	}
 
 	for _, tt := range nodeKinds {
@@ -337,20 +337,20 @@ func TestNodeGrow(t *testing.T) {
 	}
 }
 
-// Test shrinking a node.
+// Test shrinking a Node.
 func TestNodeShrink(t *testing.T) {
 	t.Parallel()
 
 	nodeKinds := []struct {
 		name        string
-		node        *nodeRef
+		node        *NodeRef
 		expected    Kind
 		minChildren int
 	}{
-		{"Node256", factory.newNode256(), Node48, node256Min},
-		{"Node48", factory.newNode48(), Node16, node48Min},
-		{"Node16", factory.newNode16(), Node4, node16Min},
-		{"Node4", factory.newNode4(), Leaf, node4Min},
+		{"Node256Kind", factory.newNode256(), Node48Kind, node256Min},
+		{"Node48Kind", factory.newNode48(), Node16Kind, node48Min},
+		{"Node16Kind", factory.newNode16(), Node4Kind, node16Min},
+		{"Node4Kind", factory.newNode4(), LeafKind, node4Min},
 	}
 
 	for _, tt := range nodeKinds {
@@ -359,7 +359,7 @@ func TestNodeShrink(t *testing.T) {
 			t.Parallel()
 
 			for j := 0; j < tt.minChildren; j++ {
-				if tt.node.kind != Node4 {
+				if tt.node.kind != Node4Kind {
 					tt.node.addChild(keyChar{ch: byte(j)}, factory.newNode4())
 				} else {
 					tt.node.addChild(keyChar{ch: byte(j)}, factory.newLeaf(Key{byte(j)}, "value"))

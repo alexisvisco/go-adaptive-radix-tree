@@ -2,21 +2,21 @@ package art
 
 import "errors"
 
-// Node types.
+// NodeKV types.
 const (
-	Leaf    Kind = 0
-	Node4   Kind = 1
-	Node16  Kind = 2
-	Node48  Kind = 3
-	Node256 Kind = 4
+	LeafKind    Kind = 0
+	Node4Kind   Kind = 1
+	Node16Kind  Kind = 2
+	Node48Kind  Kind = 3
+	Node256Kind Kind = 4
 )
 
 // Traverse Options.
 const (
-	// Iterate only over leaf nodes.
+	// Iterate only over LeafKind nodes.
 	TraverseLeaf = 1
 
-	// Iterate only over non-leaf nodes.
+	// Iterate only over non-LeafKind nodes.
 	TraverseNode = 2
 
 	// Iterate over all nodes in the tree.
@@ -32,12 +32,12 @@ var (
 	ErrNoMoreNodes            = errors.New("there are no more nodes in the tree")
 )
 
-// Kind is a node type.
+// Kind is a Node type.
 type Kind int
 
 // String returns string representation of the Kind value.
 func (k Kind) String() string {
-	return []string{"Leaf", "Node4", "Node16", "Node48", "Node256"}[k]
+	return []string{"LeafKind", "Node4Kind", "Node16Kind", "Node48Kind", "Node256Kind"}[k]
 }
 
 // Key represents the type used for keys in the Adaptive Radix Tree.
@@ -49,23 +49,23 @@ type Key []byte
 type Value interface{}
 
 // Callback defines the function type used during tree traversal.
-// It is invoked for each node visited in the traversal.
+// It is invoked for each Node visited in the traversal.
 // If the callback function returns false, the iteration is terminated early.
-type Callback func(node Node) (cont bool)
+type Callback func(node NodeKV) (cont bool)
 
-// Node represents a node within the Adaptive Radix Tree.
-type Node interface {
-	// Kind returns the type of the node, distinguishing between leaf and internal nodes.
+// NodeKV represents a Node within the Adaptive Radix Tree.
+type NodeKV interface {
+	// Kind returns the type of the Node, distinguishing between LeafKind and internal nodes.
 	Kind() Kind
 
-	// Key returns the key associated with a leaf node.
-	// This method should only be called on leaf nodes.
-	// Calling this on a non-leaf node will return nil.
+	// Key returns the key associated with a LeafKind Node.
+	// This method should only be called on LeafKind nodes.
+	// Calling this on a non-LeafKind Node will return nil.
 	Key() Key
 
-	// Value returns the value stored in a leaf node.
-	// This method should only be called on leaf nodes.
-	// Calling this on a non-leaf node will return nil.
+	// Value returns the value stored in a LeafKind Node.
+	// This method should only be called on LeafKind nodes.
+	// Calling this on a non-LeafKind Node will return nil.
 	Value() Value
 }
 
@@ -75,12 +75,12 @@ type Iterator interface {
 	// Use this method to check for remaining nodes before calling Next.
 	HasNext() bool
 
-	// Next returns the next node in the iteration and advances the iterator's position.
+	// Next returns the next Node in the iteration and advances the iterator's position.
 	// If the iteration has no more nodes, it returns ErrNoMoreNodes error.
 	// Ensure you call HasNext before invoking Next to avoid errors.
 	// If the tree has been structurally modified since the iterator was created,
 	// it returns an ErrConcurrentModification error.
-	Next() (Node, error)
+	Next() (NodeKV, error)
 }
 
 // Tree is an Adaptive Radix Tree interface.
@@ -100,32 +100,32 @@ type Tree interface {
 	// If the key does not exist, it returns nil and false.
 	Search(key Key) (value Value, found bool)
 
-	// ForEach iterates over all the nodes in the tree, invoking a provided callback function for each node.
-	// By default, it processes leaf nodes in ascending order.
+	// ForEach iterates over all the nodes in the tree, invoking a provided callback function for each Node.
+	// By default, it processes LeafKind nodes in ascending order.
 	// The iteration can be customized using options:
 	// - Pass TraverseReverse to iterate over nodes in descending order.
 	// The iteration stops if the callback function returns false, allowing for early termination.
 	ForEach(callback Callback, options ...int)
 
-	// ForEachPrefix iterates over all leaf nodes whose keys start with the specified keyPrefix,
-	// invoking a provided callback function for each matching node.
+	// ForEachPrefix iterates over all LeafKind nodes whose keys start with the specified keyPrefix,
+	// invoking a provided callback function for each matching Node.
 	// By default, the iteration processes nodes in ascending order.
 	// Use the TraverseReverse option to iterate over nodes in descending order.
 	// Iteration stops if the callback function returns false, allowing for early termination.
 	ForEachPrefix(keyPrefix Key, callback Callback, options ...int)
 
-	// Iterator returns an iterator for traversing leaf nodes in the tree.
+	// Iterator returns an iterator for traversing LeafKind nodes in the tree.
 	// By default, the iteration occurs in ascending order.
 	// To traverse nodes in reverse (descending) order, pass the TraverseReverse option.
 	Iterator(options ...int) Iterator
 
-	// Minimum retrieves the leaf node with the smallest key in the tree.
-	// If such a leaf is found, it returns its value and true.
+	// Minimum retrieves the LeafKind Node with the smallest key in the tree.
+	// If such a LeafKind is found, it returns its value and true.
 	// If the tree is empty, it returns nil and false.
 	Minimum() (Value, bool)
 
-	// Maximum retrieves the leaf node with the largest key in the tree.
-	// If such a leaf is found, it returns its value and true.
+	// Maximum retrieves the LeafKind Node with the largest key in the tree.
+	// If such a LeafKind is found, it returns its value and true.
 	// If the tree is empty, it returns nil and false.
 	Maximum() (Value, bool)
 

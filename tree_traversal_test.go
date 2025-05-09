@@ -15,30 +15,30 @@ func TestTreeTraversalPreordered(t *testing.T) {
 	tree.Insert(Key("1"), 1)
 	tree.Insert(Key("2"), 2)
 
-	traversal := []Node{}
+	traversal := []NodeKV{}
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		traversal = append(traversal, node)
 
 		return true
 	}, TraverseAll)
 
 	assert.Equal(t, 2, tree.size)
-	assert.Equal(t, Node4, traversal[0].Kind())
+	assert.Equal(t, Node4Kind, traversal[0].Kind())
 	assert.Equal(t, tree.root, traversal[0])
 	assert.Nil(t, traversal[0].Key())
 	assert.Nil(t, traversal[0].Value())
 
 	assert.Equal(t, Key("1"), traversal[1].Key())
 	assert.Equal(t, 1, traversal[1].Value())
-	assert.Equal(t, Leaf, traversal[1].Kind())
+	assert.Equal(t, LeafKind, traversal[1].Kind())
 
 	assert.Equal(t, Key("2"), traversal[2].Key())
 	assert.Equal(t, 2, traversal[2].Value())
-	assert.Equal(t, Leaf, traversal[2].Kind())
+	assert.Equal(t, LeafKind, traversal[2].Kind())
 
-	tree.ForEach(func(node Node) bool {
-		assert.Equal(t, Node4, node.Kind())
+	tree.ForEach(func(node NodeKV) bool {
+		assert.Equal(t, Node4Kind, node.Kind())
 
 		return true
 	}, TraverseNode)
@@ -52,9 +52,9 @@ func TestTreeTraversalNode48(t *testing.T) {
 		tree.Insert(Key{byte(i)}, i)
 	}
 
-	traversal := []Node{}
+	traversal := []NodeKV{}
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		traversal = append(traversal, node)
 
 		return true
@@ -63,11 +63,11 @@ func TestTreeTraversalNode48(t *testing.T) {
 	// Ensure all nodes are inserted and traversed in order.
 	assert.Equal(t, 48, tree.size)
 	assert.Equal(t, tree.root, traversal[0])
-	assert.Equal(t, Node48, traversal[0].Kind())
+	assert.Equal(t, Node48Kind, traversal[0].Kind())
 
 	for i := 1; i <= 48; i++ {
 		assert.Equal(t, Key{byte(i)}, traversal[i].Key())
-		assert.Equal(t, Leaf, traversal[i].Kind())
+		assert.Equal(t, LeafKind, traversal[i].Kind())
 	}
 }
 
@@ -83,7 +83,7 @@ func TestTreeTraversalCancelEarly(t *testing.T) {
 
 	count := 0
 
-	tree.ForEach(func(Node) bool {
+	tree.ForEach(func(NodeKV) bool {
 		count++
 
 		return count < 5
@@ -185,8 +185,8 @@ func TestTreeTraversalPrefix(t *testing.T) { //nolint:funlen
 
 			actual := []string{}
 
-			tree.ForEachPrefix(Key(tt.prefix), func(node Node) bool {
-				if node.Kind() == Leaf {
+			tree.ForEachPrefix(Key(tt.prefix), func(node NodeKV) bool {
+				if node.Kind() == LeafKind {
 					actual = append(actual, string(node.Key()))
 				}
 
@@ -210,8 +210,8 @@ func TestTreeTraversalForEachPrefixWithSimilarKey(t *testing.T) {
 
 	totalKeys := 0
 
-	tree.ForEachPrefix(Key("abc"), func(node Node) bool {
-		if node.Kind() == Leaf {
+	tree.ForEachPrefix(Key("abc"), func(node NodeKV) bool {
+		if node.Kind() == LeafKind {
 			totalKeys++
 		}
 
@@ -231,8 +231,8 @@ func TestTreeTraversalForEachPrefixConditionalCallback(t *testing.T) {
 
 	count := 0
 
-	tree.ForEachPrefix(Key("America#"), func(node Node) bool {
-		if node.Kind() == Leaf {
+	tree.ForEachPrefix(Key("America#"), func(node NodeKV) bool {
+		if node.Kind() == LeafKind {
 			count++
 		}
 
@@ -242,8 +242,8 @@ func TestTreeTraversalForEachPrefixConditionalCallback(t *testing.T) {
 
 	count = 0
 
-	tree.ForEachPrefix(Key("America#"), func(node Node) bool {
-		if node.Kind() == Leaf {
+	tree.ForEachPrefix(Key("America#"), func(node NodeKV) bool {
+		if node.Kind() == LeafKind {
 			count++
 
 			if string(node.Key()) == "America#California#Irvine" {
@@ -268,7 +268,7 @@ func TestEarlyPrefixTraversalStop(t *testing.T) {
 	tree.Insert(Key("1"), "1")
 	tree.Insert(Key("11"), "11")
 	tree.Insert(Key("111"), "111")
-	tree.ForEachPrefix(Key("11"), func(Node) bool {
+	tree.ForEachPrefix(Key("11"), func(NodeKV) bool {
 		totalCalls++
 
 		return false
@@ -288,7 +288,7 @@ func TestTreeTraversalForEachPrefixCallbackStop(t *testing.T) {
 	tree.Insert(Key("111"), "111")
 	tree.Insert(Key("1111"), "1111")
 	tree.Insert(Key("11111"), "11111")
-	tree.ForEachPrefix(Key("0"), func(Node) /*cont*/ bool {
+	tree.ForEachPrefix(Key("0"), func(NodeKV) /*cont*/ bool {
 		totalCalls++
 
 		return false
@@ -297,7 +297,7 @@ func TestTreeTraversalForEachPrefixCallbackStop(t *testing.T) {
 
 	totalCalls = 0
 
-	tree.ForEachPrefix(Key("11"), func(Node) /*cont*/ bool {
+	tree.ForEachPrefix(Key("11"), func(NodeKV) /*cont*/ bool {
 		totalCalls++
 
 		return false
@@ -306,7 +306,7 @@ func TestTreeTraversalForEachPrefixCallbackStop(t *testing.T) {
 
 	totalCalls = 0
 
-	tree.ForEachPrefix(Key("nokey"), func(Node) /*cont*/ bool {
+	tree.ForEachPrefix(Key("nokey"), func(NodeKV) /*cont*/ bool {
 		totalCalls++ // should be never called
 
 		return false
@@ -320,8 +320,8 @@ func TestPrefixTraversalWords(t *testing.T) {
 	var found []string
 
 	tree, _ := treeWithData("test/assets/words.txt")
-	tree.ForEachPrefix(Key("antisa"), func(node Node) bool {
-		if node.Kind() == Leaf {
+	tree.ForEachPrefix(Key("antisa"), func(node NodeKV) bool {
+		if node.Kind() == LeafKind {
 			val, ok := node.Value().([]byte)
 			assert.True(t, ok)
 
@@ -347,8 +347,8 @@ func TestPrefixTraversalDescWords(t *testing.T) {
 	var found []string
 
 	tree, _ := treeWithData("test/assets/words.txt")
-	tree.ForEachPrefix(Key("antisa"), func(node Node) bool {
-		if node.Kind() == Leaf {
+	tree.ForEachPrefix(Key("antisa"), func(node NodeKV) bool {
+		if node.Kind() == LeafKind {
 			val, ok := node.Value().([]byte)
 			assert.True(t, ok)
 
@@ -377,7 +377,7 @@ func TestTraversalForEachWordsBothDirections(t *testing.T) {
 	)
 
 	tree, _ := treeWithData("test/assets/words.txt")
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		val, ok := node.Value().([]byte)
 		assert.True(t, ok)
 
@@ -387,7 +387,7 @@ func TestTraversalForEachWordsBothDirections(t *testing.T) {
 	})
 	assert.Len(t, asc, 235886)
 
-	tree.ForEach(func(node Node) bool {
+	tree.ForEach(func(node NodeKV) bool {
 		val, ok := node.Value().([]byte)
 		assert.True(t, ok)
 
@@ -409,7 +409,7 @@ func TestTraversalIteratorWordsBothDirections(t *testing.T) {
 	)
 
 	tree, _ := treeWithData("test/assets/words.txt")
-	iterateWithCallback(tree.Iterator(), func(node Node) bool {
+	iterateWithCallback(tree.Iterator(), func(node NodeKV) bool {
 		val, ok := node.Value().([]byte)
 		assert.True(t, ok)
 
@@ -419,7 +419,7 @@ func TestTraversalIteratorWordsBothDirections(t *testing.T) {
 	})
 	assert.Len(t, asc, 235886)
 
-	iterateWithCallback(tree.Iterator(TraverseReverse), func(node Node) bool {
+	iterateWithCallback(tree.Iterator(TraverseReverse), func(node NodeKV) bool {
 		val, ok := node.Value().([]byte)
 		assert.True(t, ok)
 
@@ -461,7 +461,7 @@ func TestTreeIterator(t *testing.T) {
 
 	n4, err := it.Next()
 	require.NoError(t, err)
-	assert.Equal(t, Node4, n4.Kind())
+	assert.Equal(t, Node4Kind, n4.Kind())
 
 	assert.True(t, it.HasNext())
 	v1, err := it.Next()
@@ -530,7 +530,7 @@ func TestTreeIterateWordsStats(t *testing.T) {
 	stats = collectStats(tree.Iterator(TraverseNode))
 	assert.Equal(t, treeStats{0, 113419, 10433, 403, 1}, stats)
 
-	// by default Iterator traverses only leaf nodes
+	// by default Iterator traverses only LeafKind nodes
 	stats = collectStats(tree.Iterator())
 	assert.Equal(t, treeStats{235886, 0, 0, 0, 0}, stats)
 }

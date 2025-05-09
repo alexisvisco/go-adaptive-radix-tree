@@ -17,7 +17,7 @@ const (
 // refFormatter is a function that formats an artNodeRef.
 type refFormatter func(*dumpNodeRef) string
 
-// RefFullFormatter returns the full address of the node, including the ID and the pointer.
+// RefFullFormatter returns the full address of the Node, including the ID and the pointer.
 func RefFullFormatter(a *dumpNodeRef) string {
 	if a.ptr == nil {
 		return "-"
@@ -26,7 +26,7 @@ func RefFullFormatter(a *dumpNodeRef) string {
 	return fmt.Sprintf("#%d/%p", a.id, a.ptr)
 }
 
-// RefShortFormatter returns only the ID of the node.
+// RefShortFormatter returns only the ID of the Node.
 func RefShortFormatter(a *dumpNodeRef) string {
 	if a.ptr == nil {
 		return "-"
@@ -35,7 +35,7 @@ func RefShortFormatter(a *dumpNodeRef) string {
 	return fmt.Sprintf("#%d", a.id)
 }
 
-// RefAddrFormatter returns only the pointer address of the node (legacy).
+// RefAddrFormatter returns only the pointer address of the Node (legacy).
 func RefAddrFormatter(a *dumpNodeRef) string {
 	if a.ptr == nil {
 		return "-"
@@ -44,8 +44,8 @@ func RefAddrFormatter(a *dumpNodeRef) string {
 	return fmt.Sprintf("%p", a.ptr)
 }
 
-// dumpNodeRef represents the address of a nodeRef in the tree,
-// composed of a unique, sequential ID and a pointer to the node.
+// dumpNodeRef represents the address of a NodeRef in the tree,
+// composed of a unique, sequential ID and a pointer to the Node.
 // The ID remains consistent for trees built with the same keys
 // while the pointer may change with each build.
 // This structure helps identify and compare nodes across different tree instances.
@@ -56,7 +56,7 @@ func RefAddrFormatter(a *dumpNodeRef) string {
 // The IDs will be the same for the same keys, but the pointers will be different.
 type dumpNodeRef struct {
 	id  int          // unique ID
-	ptr *nodeRef     // pointer to the node
+	ptr *NodeRef     // pointer to the Node
 	fmt refFormatter // function to format the address
 }
 
@@ -69,21 +69,21 @@ func (a dumpNodeRef) String() string {
 	return a.fmt(&a)
 }
 
-// NodeRegistry maintains a mapping between nodeRef pointers and their unique IDs.
+// NodeRegistry maintains a mapping between NodeRef pointers and their unique IDs.
 type nodeRegistry struct {
-	ptrToID   map[*nodeRef]int // Maps a node pointer to its unique ID
-	addresses []dumpNodeRef    // List of node references
-	formatter refFormatter     // Function to format node references
+	ptrToID   map[*NodeRef]int // Maps a Node pointer to its unique ID
+	addresses []dumpNodeRef    // List of Node references
+	formatter refFormatter     // Function to format Node references
 }
 
-// register adds a nodeRef to the registry and returns its reference.
-func (nr *nodeRegistry) register(node *nodeRef) dumpNodeRef {
-	// Check if the node is already registered.
+// register adds a NodeRef to the registry and returns its reference.
+func (nr *nodeRegistry) register(node *NodeRef) dumpNodeRef {
+	// Check if the Node is already registered.
 	if id, exists := nr.ptrToID[node]; exists {
 		return nr.addresses[id]
 	}
 
-	// Create a new reference for the node.
+	// Create a new reference for the Node.
 	id := len(nr.addresses)
 	ref := dumpNodeRef{
 		id:  id,
@@ -91,7 +91,7 @@ func (nr *nodeRegistry) register(node *nodeRef) dumpNodeRef {
 		fmt: nr.formatter,
 	}
 
-	// Register the node and its reference.
+	// Register the Node and its reference.
 	nr.ptrToID[node] = id
 	nr.addresses = append(nr.addresses, ref)
 
@@ -121,15 +121,15 @@ func (ts *treeStringer) String() string {
 	return s
 }
 
-// regNode registers a nodeRef and returns its reference.
-func (ts *treeStringer) regNode(node *nodeRef) dumpNodeRef {
+// regNode registers a NodeRef and returns its reference.
+func (ts *treeStringer) regNode(node *NodeRef) dumpNodeRef {
 	addr := ts.nodeRegistry.register(node)
 
 	return addr
 }
 
 // regNodes registers a slice of artNodes and returns their references.
-func (ts *treeStringer) regNodes(nodes []*nodeRef) []dumpNodeRef {
+func (ts *treeStringer) regNodes(nodes []*NodeRef) []dumpNodeRef {
 	if nodes == nil {
 		return nil
 	}
@@ -238,7 +238,7 @@ func (ts *treeStringer) append(v interface{}, opts ...int) *treeStringer {
 	return ts
 }
 
-// appendKey adds a string representation of a nodeRef's key to the buffer.
+// appendKey adds a string representation of a NodeRef's key to the buffer.
 // see append for the list of available options.
 func (ts *treeStringer) appendKey(keys []byte, present []byte, opts ...int) *treeStringer {
 	options := 0
@@ -281,8 +281,8 @@ func (ts *treeStringer) appendKey(keys []byte, present []byte, opts ...int) *tre
 	return ts
 }
 
-// children generates a string representation of the children of a nodeRef.
-func (ts *treeStringer) children(children []*nodeRef, _ /*numChildred*/ uint16, keyOffset int, zeroChild *nodeRef) {
+// children generates a string representation of the children of a NodeRef.
+func (ts *treeStringer) children(children []*NodeRef, _ /*numChildred*/ uint16, keyOffset int, zeroChild *NodeRef) {
 	for i, child := range children {
 		ts.baseNode(child, keyOffset, i, len(children)+1)
 	}
@@ -290,8 +290,8 @@ func (ts *treeStringer) children(children []*nodeRef, _ /*numChildred*/ uint16, 
 	ts.baseNode(zeroChild, keyOffset, len(children)+1, len(children)+1)
 }
 
-// node generates a string representation of a nodeRef.
-func (ts *treeStringer) node(pad string, prefixLen uint16, prefix []byte, keys []byte, present []byte, children []*nodeRef, numChildren uint16, keyOffset int, zeroChild *nodeRef) {
+// Node generates a string representation of a NodeRef.
+func (ts *treeStringer) node(pad string, prefixLen uint16, prefix []byte, keys []byte, present []byte, children []*NodeRef, numChildren uint16, keyOffset int, zeroChild *NodeRef) {
 	if prefix != nil {
 		ts.append(pad).
 			append(fmt.Sprintf("prefix(%x): ", prefixLen)).
@@ -319,7 +319,7 @@ func (ts *treeStringer) node(pad string, prefixLen uint16, prefix []byte, keys [
 	ts.children(children, numChildren, keyOffset+1, zeroChild)
 }
 
-func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenTotal int) {
+func (ts *treeStringer) baseNode(an *NodeRef, depth int, childNum int, childrenTotal int) {
 	padHeader, pad := ts.generatePads(depth, childNum, childrenTotal)
 	if an == nil {
 		ts.append(padHeader).
@@ -334,7 +334,7 @@ func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenT
 			ts.regNode(an)))
 
 	switch an.kind {
-	case Node4:
+	case Node4Kind:
 		nn := an.node4()
 
 		ts.node(pad,
@@ -347,7 +347,7 @@ func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenT
 			depth,
 			nn.children[node4Max])
 
-	case Node16:
+	case Node16Kind:
 		nn := an.node16()
 
 		var present []byte
@@ -369,7 +369,7 @@ func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenT
 			depth,
 			nn.children[node16Max])
 
-	case Node48:
+	case Node48Kind:
 		nn := an.node48()
 
 		var present []byte
@@ -391,7 +391,7 @@ func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenT
 			depth,
 			nn.children[node48Max])
 
-	case Node256:
+	case Node256Kind:
 		nn := an.node256()
 
 		ts.node(pad,
@@ -404,8 +404,8 @@ func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenT
 			depth,
 			nn.children[node256Max])
 
-	case Leaf:
-		n := an.leaf()
+	case LeafKind:
+		n := an.Leaf()
 
 		ts.append(pad).
 			append(fmt.Sprintf("key(%d): ", len(n.key))).
@@ -434,7 +434,7 @@ func (ts *treeStringer) baseNode(an *nodeRef, depth int, childNum int, childrenT
 		append("\n")
 }
 
-func (ts *treeStringer) startFromNode(an *nodeRef) {
+func (ts *treeStringer) startFromNode(an *NodeRef) {
 	ts.baseNode(an, 0, 0, 0)
 }
 
@@ -463,26 +463,26 @@ DumpNode returns Tree in the human readable format:
 
 	$ go run main.go
 
-	─── Node4 (0xc00011c2d0)
+	─── Node4Kind (0xc00011c2d0)
 		prefix(0): [··········] [0 0 0 0 0 0 0 0 0 0]
 		keys: [Aa··] [65 97 · ·]
 		children(2): [0xc00011c2a0 0xc00011c300 - -] <->
-		├── Leaf (0xc00011c2a0)
+		├── LeafKind (0xc00011c2a0)
 		│   key(1): [A] [65]
 		│   val: A
 		│
-		├── Node4 (0xc00011c300)
+		├── Node4Kind (0xc00011c300)
 		│   prefix(0): [··········] [0 0 0 0 0 0 0 0 0 0]
 		│   keys: [a···] [97 · · ·]
 		│   children(1): [0xc00011c2f0 - - -] <0xc00011c2c0>
-		│   ├── Leaf (0xc00011c2f0)
+		│   ├── LeafKind (0xc00011c2f0)
 		│   │   key(2): [aa] [97 97]
 		│   │   val: aa
 		│   │
 		│   ├── nil
 		│   ├── nil
 		│   ├── nil
-		│   └── Leaf (0xc00011c2c0)
+		│   └── LeafKind (0xc00011c2c0)
 		│       key(1): [a] [97]
 		│       val: a
 		│
@@ -491,7 +491,7 @@ DumpNode returns Tree in the human readable format:
 		├── nil
 		└── nil
 */
-func DumpNode(root *nodeRef) string {
+func DumpNode(root *NodeRef) string {
 	opts := createTreeStringerOptions(WithRefFormatter(RefAddrFormatter))
 	trs := newTreeStringer(opts)
 	trs.startFromNode(root)
@@ -514,7 +514,7 @@ func WithStorageSize(size int) treeStringerOption {
 	}
 }
 
-// WithRefFormatter sets the formatter for node references.
+// WithRefFormatter sets the formatter for Node references.
 func WithRefFormatter(formatter refFormatter) treeStringerOption {
 	return func(opts *treeStringerOptions) {
 		opts.formatter = formatter
@@ -552,7 +552,7 @@ func newTreeStringer(opts treeStringerOptions) *treeStringer {
 		storage: make([]depthStorage, opts.storageSize),
 		buf:     bytes.NewBufferString(""),
 		nodeRegistry: &nodeRegistry{
-			ptrToID:   make(map[*nodeRef]int),
+			ptrToID:   make(map[*NodeRef]int),
 			formatter: opts.formatter,
 		},
 	}

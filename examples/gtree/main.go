@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	art "github.com/plar/go-adaptive-radix-tree/v2"
+	art "github.com/alexisvisco/go-adaptive-radix-tree/v2"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 	fmt.Printf("Tree Size: %d\n", tree.Size()) // Output: Tree Size: 2
 
 	// Traverse the tree using ForEach.
-	tree.ForEach(func(node art.Node) bool {
+	tree.ForEach(func(node art.NodeKV) bool {
 		fmt.Printf("Node Key: %s, Node Value: %s\n", string(node.Key()), node.Value().(string))
 		return true // Continue iteration
 	}, art.TraverseLeaf)
