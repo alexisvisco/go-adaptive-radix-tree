@@ -21,7 +21,7 @@ func TestTreeTraversalPreordered(t *testing.T) {
 		traversal = append(traversal, node)
 
 		return true
-	}, WithVisitAllOption())
+	}, TraverseAll)
 
 	assert.Equal(t, 2, tree.size)
 	assert.Equal(t, Node4, traversal[0].Kind())
@@ -41,7 +41,7 @@ func TestTreeTraversalPreordered(t *testing.T) {
 		assert.Equal(t, Node4, node.Kind())
 
 		return true
-	}, WithVisitNodeOption())
+	}, TraverseNode)
 }
 
 func TestTreeTraversalNode48(t *testing.T) {
@@ -58,7 +58,7 @@ func TestTreeTraversalNode48(t *testing.T) {
 		traversal = append(traversal, node)
 
 		return true
-	}, WithVisitAllOption())
+	}, TraverseAll)
 
 	// Ensure all nodes are inserted and traversed in order.
 	assert.Equal(t, 48, tree.size)
@@ -87,7 +87,7 @@ func TestTreeTraversalCancelEarly(t *testing.T) {
 		count++
 
 		return count < 5
-	}, WithVisitAllOption())
+	}, TraverseAll)
 
 	assert.Equal(t, 5, count)
 }
@@ -96,7 +96,7 @@ func TestTreeTraversalWordsStats(t *testing.T) {
 	t.Parallel()
 
 	tree, _ := treeWithData("test/assets/words.txt")
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 
 	assert.Equal(t, treeStats{235886, 113419, 10433, 403, 1}, stats)
 }
@@ -356,7 +356,7 @@ func TestPrefixTraversalDescWords(t *testing.T) {
 		}
 
 		return true
-	}, WithReverseOption())
+	}, TraverseReverse)
 
 	expected := []string{
 		"antisavage",
@@ -394,7 +394,7 @@ func TestTraversalForEachWordsBothDirections(t *testing.T) {
 		desc = append(desc, string(val))
 
 		return true
-	}, WithReverseOption())
+	}, TraverseReverse)
 	assert.Len(t, desc, 235886)
 
 	assert.True(t, areReversedCopies(asc, desc))
@@ -419,7 +419,7 @@ func TestTraversalIteratorWordsBothDirections(t *testing.T) {
 	})
 	assert.Len(t, asc, 235886)
 
-	iterateWithCallback(tree.Iterator(WithReverseOption()), func(node Node) bool {
+	iterateWithCallback(tree.Iterator(TraverseReverse), func(node Node) bool {
 		val, ok := node.Value().([]byte)
 		assert.True(t, ok)
 
@@ -455,7 +455,7 @@ func TestTreeIterator(t *testing.T) {
 	tree.Insert(Key("2"), []byte{2})
 	tree.Insert(Key("1"), []byte{1})
 
-	it := tree.Iterator(WithVisitAllOption())
+	it := tree.Iterator(TraverseAll)
 	assert.NotNil(t, it)
 	assert.True(t, it.HasNext())
 
@@ -486,7 +486,7 @@ func TestTreeIteratorConcurrentModification(t *testing.T) {
 	tree.Insert(Key("2"), []byte{2})
 	tree.Insert(Key("1"), []byte{1})
 
-	it1 := tree.Iterator(WithVisitAllOption())
+	it1 := tree.Iterator(TraverseAll)
 	assert.NotNil(t, it1)
 	assert.True(t, it1.HasNext())
 
@@ -497,7 +497,7 @@ func TestTreeIteratorConcurrentModification(t *testing.T) {
 	assert.Nil(t, bad)
 	assert.Equal(t, ErrConcurrentModification, err)
 
-	it2 := tree.Iterator(WithVisitAllOption())
+	it2 := tree.Iterator(TraverseAll)
 	assert.NotNil(t, it2)
 	assert.True(t, it2.HasNext())
 
@@ -508,7 +508,7 @@ func TestTreeIteratorConcurrentModification(t *testing.T) {
 	assert.Equal(t, ErrConcurrentModification, err)
 
 	// test buffered ConcurrentModification
-	it3 := tree.Iterator(WithVisitNodeOption())
+	it3 := tree.Iterator(TraverseNode)
 	assert.NotNil(t, it3)
 	tree.Insert(Key("3"), []byte{3})
 	assert.True(t, it3.HasNext())
@@ -521,13 +521,13 @@ func TestTreeIterateWordsStats(t *testing.T) {
 	t.Parallel()
 
 	tree, _ := treeWithData("test/assets/words.txt")
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 	assert.Equal(t, treeStats{235886, 113419, 10433, 403, 1}, stats)
 
-	stats = collectStats(tree.Iterator(WithVisitLeafOption()))
+	stats = collectStats(tree.Iterator(TraverseLeaf))
 	assert.Equal(t, treeStats{235886, 0, 0, 0, 0}, stats)
 
-	stats = collectStats(tree.Iterator(WithVisitNodeOption()))
+	stats = collectStats(tree.Iterator(TraverseNode))
 	assert.Equal(t, treeStats{0, 113419, 10433, 403, 1}, stats)
 
 	// by default Iterator traverses only leaf nodes

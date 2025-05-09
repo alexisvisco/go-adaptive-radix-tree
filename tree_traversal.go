@@ -18,6 +18,25 @@ func noopTraverseFunc() (int, bool) {
 	return 0, false
 }
 
+// traverseOpts defines the options for tree traversal.
+type traverseOpts int
+
+func (opts traverseOpts) hasLeaf() bool {
+	return opts&TraverseLeaf == TraverseLeaf
+}
+
+func (opts traverseOpts) hasNode() bool {
+	return opts&TraverseNode == TraverseNode
+}
+
+func (opts traverseOpts) hasAll() bool {
+	return opts&TraverseAll == TraverseAll
+}
+
+func (opts traverseOpts) hasReverse() bool {
+	return opts&TraverseReverse == TraverseReverse
+}
+
 // traverseContext is a context for traversing nodes with 4, 16, or 256 children.
 type traverseContext struct {
 	numChildren   int
@@ -147,17 +166,39 @@ func newTraverseFunc(n *nodeRef, reverse bool) traverseFunc {
 	}
 }
 
-func traverseFilter(opts *TraverseOptions, callback Callback) Callback {
-	if opts.VisitNode && opts.VisitLeaf {
+func mergeOptions(options ...int) int {
+	opts := 0
+	for _, opt := range options {
+		opts |= opt
+	}
+
+	return opts
+}
+
+func traverseOptions(options ...int) traverseOpts {
+	opts := mergeOptions(options...)
+
+	typeOpts := opts & TraverseAll
+	if typeOpts == 0 {
+		typeOpts = TraverseLeaf // By default filter only leafs
+	}
+
+	orderOpts := opts & TraverseReverse
+
+	return traverseOpts(typeOpts | orderOpts)
+}
+
+func traverseFilter(opts traverseOpts, callback Callback) Callback {
+	if opts.hasAll() {
 		return callback
 	}
 
 	return func(node Node) bool {
-		if opts.VisitLeaf && node.Kind() == Leaf {
+		if opts.hasLeaf() && node.Kind() == Leaf {
 			return callback(node)
 		}
 
-		if opts.VisitNode && node.Kind() != Leaf {
+		if opts.hasNode() && node.Kind() != Leaf {
 			return callback(node)
 		}
 
@@ -197,7 +238,9 @@ func (tr *tree) traverseChildren(nextFn traverseFunc, children []*nodeRef, cb Ca
 	return traverseContinue
 }
 
-func (tr *tree) forEachPrefix(key Key, callback Callback, opts ...TraverseOption) traverseAction {
+func (tr *tree) forEachPrefix(key Key, callback Callback, opts int) traverseAction {
+	opts &= (TraverseLeaf | TraverseReverse) // keep only leaf and reverse options
+
 	tr.ForEach(func(n Node) bool {
 		current, ok := n.(*nodeRef)
 		if !ok {
@@ -209,7 +252,7 @@ func (tr *tree) forEachPrefix(key Key, callback Callback, opts ...TraverseOption
 		}
 
 		return true
-	}, opts...)
+	}, opts)
 
 	return traverseContinue
 }

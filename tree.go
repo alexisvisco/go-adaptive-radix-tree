@@ -147,19 +147,20 @@ func (tr *tree) Size() int {
 }
 
 // ForEach iterates over all keys in the tree and calls the callback function.
-func (tr *tree) ForEach(callback Callback, options ...TraverseOption) {
-	opts := applyOptions(options...)
-	tr.forEachRecursively(tr.root, traverseFilter(opts, callback), opts.Reverse)
+func (tr *tree) ForEach(callback Callback, opts ...int) {
+	options := traverseOptions(opts...)
+	tr.forEachRecursively(tr.root, traverseFilter(options, callback), options.hasReverse())
 }
 
 // ForEachPrefix iterates over all keys with the given prefix.
-func (tr *tree) ForEachPrefix(key Key, callback Callback, options ...TraverseOption) {
-	tr.forEachPrefix(key, callback, options...)
+func (tr *tree) ForEachPrefix(key Key, callback Callback, opts ...int) {
+	options := mergeOptions(opts...)
+	tr.forEachPrefix(key, callback, options)
 }
 
 // Iterator returns a new tree iterator.
-func (tr *tree) Iterator(options ...TraverseOption) Iterator {
-	return newTreeIterator(tr, applyOptions(options...))
+func (tr *tree) Iterator(opts ...int) Iterator {
+	return newTreeIterator(tr, traverseOptions(opts...))
 }
 
 // String returns tree in the human readable format, see DumpNode for examples.

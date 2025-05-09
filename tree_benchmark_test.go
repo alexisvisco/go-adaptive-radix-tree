@@ -47,7 +47,7 @@ func BenchmarkWordsTreeIterator(b *testing.B) {
 
 	b.ResetTimer()
 
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 	assert.Equal(b, treeStats{235886, 113419, 10433, 403, 1}, stats)
 }
 
@@ -62,15 +62,15 @@ func BenchmarkWordsTreeForEach(b *testing.B) {
 	b.ResetTimer()
 
 	stats := treeStats{}
-	tree.ForEach(stats.processStats, WithVisitAllOption())
+	tree.ForEach(stats.processStats, TraverseAll)
 	assert.Equal(b, treeStats{235886, 113419, 10433, 403, 1}, stats)
 
 	stats = treeStats{}
-	tree.ForEach(stats.processStats, WithVisitLeafOption())
+	tree.ForEach(stats.processStats, TraverseLeaf)
 	assert.Equal(b, treeStats{235886, 0, 0, 0, 0}, stats)
 
 	stats = treeStats{}
-	tree.ForEach(stats.processStats, WithVisitNodeOption())
+	tree.ForEach(stats.processStats, TraverseNode)
 	assert.Equal(b, treeStats{0, 113419, 10433, 403, 1}, stats)
 }
 
@@ -114,7 +114,7 @@ func BenchmarkUUIDsTreeIterator(b *testing.B) {
 
 	b.ResetTimer()
 
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 	assert.Equal(b, treeStats{100000, 32288, 5120, 0, 0}, stats)
 }
 
@@ -128,7 +128,7 @@ func BenchmarkUUIDsTreeForEach(b *testing.B) {
 
 	b.ResetTimer()
 
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 	assert.Equal(b, treeStats{100000, 32288, 5120, 0, 0}, stats)
 }
 
@@ -172,7 +172,7 @@ func BenchmarkHSKTreeIterator(b *testing.B) {
 
 	b.ResetTimer()
 
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 	assert.Equal(b, treeStats{4995, 1630, 276, 21, 4}, stats)
 }
 
@@ -186,6 +186,6 @@ func BenchmarkHSKTreeForEach(b *testing.B) {
 
 	b.ResetTimer()
 
-	stats := collectStats(tree.Iterator(WithVisitAllOption()))
+	stats := collectStats(tree.Iterator(TraverseAll))
 	assert.Equal(b, treeStats{4995, 1630, 276, 21, 4}, stats)
 }

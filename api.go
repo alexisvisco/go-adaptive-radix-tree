@@ -11,46 +11,20 @@ const (
 	Node256 Kind = 4
 )
 
-type TraverseOptions struct {
-	VisitLeaf bool
-	VisitNode bool
-	Reverse   bool
-}
+// Traverse Options.
+const (
+	// Iterate only over leaf nodes.
+	TraverseLeaf = 1
 
-type TraverseOption func(*TraverseOptions)
+	// Iterate only over non-leaf nodes.
+	TraverseNode = 2
 
-func WithVisitLeafOption() TraverseOption {
-	return func(o *TraverseOptions) {
-		o.VisitLeaf = true
-		o.VisitNode = false
-	}
-}
+	// Iterate over all nodes in the tree.
+	TraverseAll = TraverseLeaf | TraverseNode
 
-func WithVisitNodeOption() TraverseOption {
-	return func(o *TraverseOptions) {
-		o.VisitNode = true
-		o.VisitLeaf = false
-	}
-}
-
-func WithVisitAllOption() TraverseOption {
-	return func(o *TraverseOptions) {
-		o.VisitLeaf = true
-		o.VisitNode = true
-	}
-}
-
-func WithReverseOption() TraverseOption {
-	return func(o *TraverseOptions) {
-		o.Reverse = true
-	}
-}
-
-var defaultTraverseOptions = &TraverseOptions{
-	VisitLeaf: true,
-	VisitNode: false,
-	Reverse:   false,
-}
+	// Iterate in reverse order.
+	TraverseReverse = 4
+)
 
 // These errors can be returned when iteration over the tree.
 var (
@@ -131,19 +105,19 @@ type Tree interface {
 	// The iteration can be customized using options:
 	// - Pass TraverseReverse to iterate over nodes in descending order.
 	// The iteration stops if the callback function returns false, allowing for early termination.
-	ForEach(callback Callback, options ...TraverseOption)
+	ForEach(callback Callback, options ...int)
 
 	// ForEachPrefix iterates over all leaf nodes whose keys start with the specified keyPrefix,
 	// invoking a provided callback function for each matching node.
 	// By default, the iteration processes nodes in ascending order.
 	// Use the TraverseReverse option to iterate over nodes in descending order.
 	// Iteration stops if the callback function returns false, allowing for early termination.
-	ForEachPrefix(keyPrefix Key, callback Callback, options ...TraverseOption)
+	ForEachPrefix(keyPrefix Key, callback Callback, options ...int)
 
 	// Iterator returns an iterator for traversing leaf nodes in the tree.
 	// By default, the iteration occurs in ascending order.
 	// To traverse nodes in reverse (descending) order, pass the TraverseReverse option.
-	Iterator(options ...TraverseOption) Iterator
+	Iterator(options ...int) Iterator
 
 	// Minimum retrieves the leaf node with the smallest key in the tree.
 	// If such a leaf is found, it returns its value and true.

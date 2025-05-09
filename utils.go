@@ -83,14 +83,3 @@ func ternary[T any](condition bool, ifTrue T, ifFalse T) T {
 
 	return ifFalse
 }
-
-func applyOptions(opts ...TraverseOption) *TraverseOptions {
-	options := defaultTraverseOptions
-
-	// Apply each option
-	for _, opt := range opts {
-		opt(options)
-	}
-
-	return options
-}
