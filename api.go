@@ -131,6 +131,14 @@ type Tree interface {
 
 	// Size returns the number of key-value pairs stored in the tree.
 	Size() int
+
+	ForEachPrefixWithSeparator(
+		keyPrefix Key,
+		callback Callback,
+		countSeparator func(Key, Key) int,
+		maxDepth int,
+		reverse bool,
+	)
 }
 
 // New creates a new adaptive radix tree.
